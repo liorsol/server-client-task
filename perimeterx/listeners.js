@@ -3,14 +3,16 @@ import { ajax } from './utils';
 class Listeners {
     constructor() {
         this.listeners = [];
+        this.analytics = [];
+
+        // used for tmp data not needed to analyse
         this.tmpEvents = {
             mousemove: [],
             keydown: {},
         };
-        this.analytics = [];
         this.isStarted = false;
 
-        // to ingnore half of the move events
+        // used for ignoring half of the move events
         this.moveIgnore = true;
     }
 
@@ -18,28 +20,31 @@ class Listeners {
         this.listeners.push({
             event,
             method
-        })
+        });
         window.addEventListener(event, method);
     }
 
-    stop() {
+    stop(force = false) {
         if (!this.isStarted) {
             console.log("listening is already stopped");
             return;
         }
 
         console.log("stop listening");
+
         this.isStarted = false;
         this.listeners.forEach( ({event, method}) => window.removeEventListener(event, method));
-        this.sendAnalytics();
+        this.sendAnalytics(!force);
     }
 
     start() {
         console.log("start listening");
+
         this.isStarted = true;
         ["mousemove", "click", "keydown", "keyup"].forEach(t => this.addListener(t,this.logEvent.bind(this)));
     }
 
+    // handle each type of event
     logEvent(evt) {
         console.log(evt.type, evt);
         switch (evt.type) {
@@ -56,16 +61,21 @@ class Listeners {
                 this.logMouseMove(evt);
                 break;
         }
+        if (this.analytics.length >= 50) {
+            console.log("50 events occurred");
+            this.stop();
+        }
     }
 
-    sendAnalytics() {
+    sendAnalytics(async = true) {
         const data = {
             events: this.analytics
         }
-        ajax('POST', "/data", data);
+        ajax('POST', "/data", data, async);
     }
 
     logType(evt) {
+        // save 'keydown' later for full typing event
         if (evt.type === "keydown") {
             this.tmpEvents[evt.code] = evt;
             return;
@@ -128,7 +138,7 @@ class Listeners {
                 type: evt.type,
                 shiftKey: evt.shiftKey,
                 altKey: evt.altKey,
-
+                // get last 5 'mousemove's before 'click' occurred
                 movesBefore: this.tmpEvents.mousemove.slice(this.tmpEvents.mousemove.length - 6)
             }
         };

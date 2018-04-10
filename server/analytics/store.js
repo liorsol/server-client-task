@@ -1,5 +1,7 @@
 
 export let store = {
+    // For storing created clients IDs
     clients: {},
-    sessions: {}
+    // For storing analytics data
+    analytics: {}
 };

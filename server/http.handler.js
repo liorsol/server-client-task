@@ -3,28 +3,24 @@ import {store} from "./analytics/store";
 import atob from "atob";
 import btoa from "btoa";
 
+// Getting session ID and creating/returning client id
 export const init = (req, res) => {
     try {
-
-        console.log(req.body)
         let payload = JSON.parse(atob(req.body));
         console.log("data received", payload);
 
-        //console.log('SESSIONID', atob(req.get('SESSIONID')));
         const userAgentIp = req.ip + req.get('User-Agent');
-        const sessionId = payload.sessionId; //atob(req.get('SESSIONID'));
-
-        //let clientId = (req.get('CLIENTID') && atob(req.get('CLIENTID'))) || store.clients[userAgentIp] || guid();
+        const sessionId = payload.sessionId;
 
         let clientId = payload.clientId || store.clients[userAgentIp] || guid();
-        console.log('CLIENTID', clientId);
+        console.log('clientId created', clientId);
 
         store.clients[userAgentIp] = clientId;
-        if(!store.sessions[clientId]) {
-            store.sessions[clientId] = {};
+        if(!store.analytics[clientId]) {
+            store.analytics[clientId] = {};
         }
-        if (!store.sessions[clientId][sessionId]) {
-            store.sessions[clientId][sessionId] = [];
+        if (!store.analytics[clientId][sessionId]) {
+            store.analytics[clientId][sessionId] = [];
         }
 
         res.send(btoa(JSON.stringify({clientId, status: "ok"})));
@@ -34,17 +30,19 @@ export const init = (req, res) => {
     }
 };
 
+// Storing data received from browser client
 export const data = (req, res) => {
     try {
 
         let payload = JSON.parse(atob(req.body));
+        console.log("data received", payload);
 
         const { clientId, sessionId, events } = payload;
-        if (!clientId || !store.sessions[clientId] || !sessionId || !store.sessions[clientId][sessionId]) {
+        if (!clientId || !store.analytics[clientId] || !sessionId || !store.analytics[clientId][sessionId]) {
             res.status(400).send({ error: 'something blew up' });
             return;
         }
-        store.sessions[clientId][sessionId].concat(events);
+        store.analytics[clientId][sessionId].concat(events);
 
         res.send(btoa(JSON.stringify({status: "ok"})));
     } catch (e) {

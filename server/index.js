@@ -8,8 +8,6 @@ import * as bodyParser from 'body-parser';
 
 let app = express();
 
-let sessions = {};
-
 const compiler = webpack(webpackConfig)
 
 app.use(webpackMiddleware(compiler, {
@@ -20,8 +18,6 @@ app.use(webpackMiddleware(compiler, {
 app.use(webpackHotMiddleware(compiler));
 
 app.use(bodyParser.text());
-
-//app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req,res) => {
 	res.sendFile(path.join(__dirname,'./index.html'));

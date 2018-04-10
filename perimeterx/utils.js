@@ -1,5 +1,6 @@
 import { store } from './store';
 
+// method for creating uuid
 export const guid = () => {
     function s4() {
         return Math.floor((1 + Math.random()) * 0x10000)
@@ -9,13 +10,11 @@ export const guid = () => {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
-export const ajax = (type, url, data) =>
+export const ajax = (type, url, data, async = true) =>
     new Promise(function(resolve, reject) {
         try {
             let xhr = new (window.XMLHttpRequest || ActiveXObject)('MSXML2.XMLHTTP.3.0');
-            xhr.open(type, url, 1);
-            //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            //xhr.setRequestHeader('Content-type', 'application/json');
+            xhr.open(type, url, async);
             let body = { sessionId: window.sessionStorage.getItem("sessionId") };
             xhr.setRequestHeader('SESSIONID', window.sessionStorage.getItem("sessionId"));
             if (store.clientId) {
@@ -27,7 +26,6 @@ export const ajax = (type, url, data) =>
                     if (xhr.status === 200) {
                         console.log("xhr done successfully");
                         var resp = xhr.responseText;
-                        //var respJson = JSON.parse(resp);
                         resolve(JSON.parse(atob(resp)));
                     } else {
                         reject(xhr.status);
