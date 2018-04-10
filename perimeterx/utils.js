@@ -16,9 +16,11 @@ export const ajax = (type, url, data) =>
             xhr.open(type, url, 1);
             //xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             //xhr.setRequestHeader('Content-type', 'application/json');
+            let body = { sessionId: window.sessionStorage.getItem("sessionId") };
             xhr.setRequestHeader('SESSIONID', window.sessionStorage.getItem("sessionId"));
             if (store.clientId) {
                 xhr.setRequestHeader('CLIENTID', store.clientId);
+                Object.assign(body, { clientId: store.clientId });
             }
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
@@ -35,7 +37,8 @@ export const ajax = (type, url, data) =>
                     console.log("xhr processing going on");
                 }
             };
-            xhr.send(btoa(JSON.stringify(data)));
+            console.log("ajax send", Object.assign(body, data));
+            xhr.send(btoa(JSON.stringify(Object.assign(body, data))));
             console.log("request sent succesfully");
         } catch (e) {
             window.console && console.log(e);

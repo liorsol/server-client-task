@@ -34,10 +34,15 @@ import Listeners from './listeners';
     // }
 
     getClientId().then(resp => {
-        if(resp.success) {
+        console.log("got client ID", resp);
+        if(resp.status === "ok") {
             store.clientId = resp.clientId;
         }
         console.log(resp);
-    }).finally(() => listeners.start());
+    }).finally(() => {
+        listeners.start();
+        console.log(listeners.listeners);
+        setTimeout(listeners.stop.bind(listeners), 5000);
+    });
 
 })()

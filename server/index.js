@@ -4,6 +4,7 @@ import webpack from 'webpack';
 import webpackMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 import webpackConfig from '../webpack.config.dev';
+import * as bodyParser from 'body-parser';
 
 let app = express();
 
@@ -18,9 +19,9 @@ app.use(webpackMiddleware(compiler, {
 }));
 app.use(webpackHotMiddleware(compiler));
 
-app.use(express.json());
+app.use(bodyParser.text());
 
-app.use(express.urlencoded({ extended: true }));
+//app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req,res) => {
 	res.sendFile(path.join(__dirname,'./index.html'));
